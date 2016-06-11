@@ -31,7 +31,7 @@ impl<Kind, Type> IdMap<Kind, Type> where Type: Eq + Clone, Kind: Clone {
         find_result.map(|&(_, ref ozw_object)| ozw_object.clone())
     }
 
-    pub fn remove_by_ozw(&mut self, needle: &Type) -> Option<TaxoId<Kind>> {
+    pub fn remove_by_ozw(&self, needle: &Type) -> Vec<TaxoId<Kind>> {
         let mut guard = self.map.write().unwrap(); // we have bigger problems if we're poisoned
         guard.iter().position(|&(_, ref item)| item == needle).map(|index| guard.remove(index).0)
     }

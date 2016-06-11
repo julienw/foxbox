@@ -213,8 +213,7 @@ pub struct OpenzwaveAdapter {
     version: [u32; 4],
     ozw: ZWaveManager,
     node_map: IdMap<ServiceId, Node>,
-    getter_map: IdMap<Channel, ValueID>,
-    setter_map: IdMap<Channel, ValueID>,
+    channel_map: IdMap<Channel, ValueID>,
     watchers: Arc<Mutex<Watchers>>,
     value_cache: Arc<Mutex<ValueCache>>,
     controller_map: IdMap<ServiceId, Controller>,
@@ -272,8 +271,7 @@ impl OpenzwaveAdapter {
             version: [1, 0, 0, 0],
             ozw: ozw,
             node_map: IdMap::new(),
-            getter_map: IdMap::new(),
-            setter_map: IdMap::new(),
+            channel_map: IdMap::new(),
             watchers: Arc::new(Mutex::new(Watchers::new())),
             value_cache: Arc::new(Mutex::new(HashMap::new())),
             controller_map: IdMap::new(),
@@ -293,8 +291,7 @@ impl OpenzwaveAdapter {
         let adapter_id = self.id.clone();
         let box_manager = box_manager.clone();
         let mut node_map = self.node_map.clone();
-        let mut getter_map = self.getter_map.clone();
-        let mut setter_map = self.setter_map.clone();
+        let mut channel_map = self.channel_map.clone();
         let mut controller_map = self.controller_map.clone();
         let mut include_map = self.include_map.clone();
         let mut exclude_map = self.exclude_map.clone();
@@ -407,14 +404,14 @@ impl OpenzwaveAdapter {
                             chan.supports_fetch = None;
                             chan.supports_watch = None;
                         } else {
-                            getter_map.push(id.clone(), vid);
+                            channel_map.push(id.clone(), vid);
                         }
                         if vid.is_read_only() {
                             // For some reason, the value is configured as not being writeable.
                             // Make sure that the channel doesn't pretend the opposite.
                             chan.supports_send = None;
                         } else {
-                            setter_map.push(id.clone(), vid);
+                            channel_map.push(id.clone(), vid);
                         }
 
 
@@ -429,7 +426,7 @@ impl OpenzwaveAdapter {
                             _ => continue // ignore non-bool vals for now
                         };
 
-                        let taxo_id = match getter_map.find_taxo_id_from_ozw(&vid) {
+                        let taxo_id = match channel_map.find_taxo_id_from_ozw(&vid) {
                             Some(taxo_id) => taxo_id,
                             _ => continue
                         };
